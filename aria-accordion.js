@@ -17,8 +17,6 @@
  * @property {string} headersSelector CSS selector used to identify headers.
  * @property {string} panelsSelector CSS selector used to identify panels.
  * @property {string} buttonsSelector CSS selector used to identify buttons.
- * @property {string} buttonsGeneratedContent "text" copies content as text,
- *                                            "html" copies content as HTML
  * @property {HTMLButtonElement} button The button that will be cloned to open
  *                                      or close a panel.
  * @property {string} buttonSuffixId Suffix of button ID.
@@ -87,58 +85,42 @@ class AriaAccordion {
      * Initializes attributes and classes of the accordion elements.
      */
     initAttributes() {
-        this.root.setAttribute('role', 'tablist')
+        this.root.setAttribute('role', 'presentation')
         this.root.setAttribute(
             'aria-multiselectable',
-            this.options.multiselectable.toString()
+            this.options.multiselectable
         )
         this.root.classList.add(this.options.prefixClass)
 
         // id generated if not present
-        if(!this.root.hasAttribute('id')) {
+        if(!this.root.id) {
             const readableIndex = Math.random().toString(32).slice(2, 12)
-            this.root.setAttribute(
-                'id',
-                this.options.accordionPrefixId + '-' + readableIndex
-            )
+            this.root.id = this.options.accordionPrefixId + '-' + readableIndex
         }
 
         this.panels.forEach((panel, index) => {
             const header = panel.querySelector(this.options.headersSelector)
 
             const button = this.options.button.cloneNode()
-            button.innerHTML = this.options.buttonsGeneratedContent === 'html'
-                             ? header.innerHTML
-                             : header.innerText
+            while(header.firstChild) {
+                button.appendChild(header.firstChild)
+            }
+            header.appendChild(button)
 
-            header.setAttribute('tabindex', '0')
-            header.classList.add(
-                this.options.prefixClass + this.options.headerSuffixClass
-            )
-
-            this.root.insertBefore(button, panel)
+            this.root.insertBefore(header, panel)
 
             const panelId = (panel.id || this.root.id) + '-' + index
-
             const buttonId = panelId + this.options.buttonSuffixId
 
+            button.id = buttonId
             button.setAttribute('aria-controls', panelId)
             button.setAttribute('aria-expanded', 'false')
-            button.setAttribute('role', 'tab')
-            button.setAttribute('id', buttonId)
-            button.setAttribute('tabIndex', '-1')
             button.setAttribute('aria-selected', 'false')
-            button.classList.add(
-                this.options.prefixClass + this.options.buttonSuffixClass
-            )
 
+            panel.id = panelId
             panel.setAttribute('aria-labelledby', buttonId)
-            panel.setAttribute('role', 'tabpanel')
-            panel.setAttribute('id', panelId)
+            panel.setAttribute('role', 'region')
             panel.setAttribute('aria-hidden', 'true')
-            panel.classList.add(
-                this.options.prefixClass + this.options.panelSuffixClass
-            )
 
             // if opened by default
             if(panel.dataset.accordionOpen === 'true') {
@@ -146,9 +128,6 @@ class AriaAccordion {
                 button.dataset.accordionOpen = null
                 panel.setAttribute('aria-hidden', 'false')
             }
-
-            // init first one focusable
-            if(index === 0) button.removeAttribute('tabindex');
         })
     }
 
@@ -174,15 +153,6 @@ class AriaAccordion {
                 )
             }
         )
-
-        this.root.querySelectorAll(this.options.panelsSelector).forEach(
-            panel => {
-                panel.addEventListener(
-                    'keydown',
-                    event => this.keydownPanelEventHandler(event)
-                )
-            }
-        )
     }
 
     /**
@@ -196,14 +166,10 @@ class AriaAccordion {
         const currentButton = AriaAccordion.closest(target, 'button')
 
         this.root.querySelectorAll(this.options.buttonsSelector).forEach(
-            button => {
-                button.setAttribute('tabindex', '-1')
-                button.setAttribute('aria-selected', 'false')
-            }
+            button => button.setAttribute('aria-selected', 'false')
         )
 
         currentButton.setAttribute('aria-selected', 'true')
-        currentButton.setAttribute('tabindex', null)
     }
 
     /**
@@ -263,88 +229,30 @@ class AriaAccordion {
      */
     keydownButtonEventHandler(event) {
         const currentButton = AriaAccordion.closest(event.target, 'button')
-        const firstButton = this.buttons[0]
-        const lastButton = this.buttons[this.buttons.length - 1]
-        const index = this.buttons.indexOf(currentButton)
+        let index = this.buttons.indexOf(currentButton)
 
-        let newTarget = null
+        const keys = this.options.direction === 'ltr' ? AriaAccordion.ltrKeys
+                                                      : AriaAccordion.rtlKeys
 
-        const keys = this.options.direction === 'ltr'
-                   ? AriaAccordion.ltrKeys
-                   : AriaAccordion.rtlKeys
-
-        const allKeyCode = [].concat(
-            keys.prev, keys.next, keys.first, keys.last
-        )
-
-        if(allKeyCode.includes(event.keyCode) && !event.ctrlKey) {
-            this.buttons.forEach(button => {
-                button.setAttribute('tabindex', '-1')
-                button.setAttribute('aria-selected', 'false')
-            })
+        if(AriaAccordion.allKeys.includes(event.keyCode) && !event.ctrlKey) {
+            this.buttons.forEach(
+                button => button.setAttribute('aria-selected', 'false')
+            )
 
             if(event.keyCode === AriaAccordion.keyHome) {
-                newTarget = firstButton
+                index = 0 // Home
             } else if(event.keyCode === AriaAccordion.keyEnd) {
-                // strike end in the tab => last tab
-                newTarget = lastButton
+                index = this.buttons.length - 1 // End
             } else if(keys.prev.includes(event.keyCode)) {
-                // strike up or left in the tab => previous tab
-                // if we are on first one, activate last
-                newTarget = currentButton === firstButton
-                          ? lastButton
-                          : this.buttons[index - 1]
+                index += this.buttons.length - 1 // Previous
             } else if(keys.next.includes(event.keyCode)) {
-                // strike down or right in the tab => next tab
-                // if we are on last one, activate first
-                newTarget = currentButton === lastButton
-                          ? firstButton
-                          : this.buttons[index + 1]
+                index++ // Next
             }
 
-            if(newTarget !== null) AriaAccordion.goToHeader(newTarget)
+            AriaAccordion.goToHeader(this.buttons[index % this.buttons.length])
 
             event.preventDefault()
         }
-    }
-
-    /**
-     * Handles keydown button event on a panel.
-     *
-     * @param {Event} event The event information.
-     * @private
-     */
-    keydownPanelEventHandler(event) {
-        const panel = event.target.querySelector(this.options.panelsSelector)
-        const button = this.root.getElementById(
-            panel.getAttribute('aria-labelledby')
-        )
-        const firstButton = this.buttons[0]
-        const lastButton = this.buttons[this.buttons.length - 1]
-        const index = this.buttons.indexOf(button)
-
-        if(event.ctrlKey) {
-            let target = null
-
-            if(event.keyCode === AriaAccordion.keyUp) {
-                // CTRL+UP => go to header
-                target = button
-            } else if(event.keyCode === AriaAccordion.keyPageUp) {
-                // CTRL+PAGE-UP => go to previous header
-                target = button === firstButton ? lastButton
-                                                : this.buttons[index - 1]
-            } else if(event.keyCode === AriaAccordion.keyPageDown) {
-                // CTRL+PAGE-DOWN => go to next header
-                target = button === lastButton ? firstButton
-                                               : this.buttons[index + 1]
-            }
-
-            if(target !== null) {
-                AriaAccordion.goToHeader(target)
-                event.preventDefault()
-            }
-        }
-
     }
 }
 
@@ -355,7 +263,6 @@ class AriaAccordion {
  */
 AriaAccordion.goToHeader = function(target) {
     target.setAttribute('aria-selected', 'true')
-    target.setAttribute('tabindex', null)
 
     setTimeout(() => target.focus(), 0)
 }
@@ -375,20 +282,6 @@ AriaAccordion.closest = function(element, selector) {
 
     return AriaAccordion.closest(element.parentNode, selector)
 }
-
-/**
- * Key code for the Page Up key.
- *
- * @member {int}
- */
-AriaAccordion.keyPageUp = 33
-
-/**
- * Key code for the Page Down key.
- *
- * @member {int}
- */
-AriaAccordion.keyPageDown = 34
 
 /**
  * Key code for the End key.
@@ -457,13 +350,24 @@ AriaAccordion.rtlKeys = {
 }
 
 /**
+ * All key codes the accordion understands.
+ *
+ * @member {int[]}
+ */
+AriaAccordion.allKeys = [].concat(
+    AriaAccordion.keyUp, AriaAccordion.keyDown,
+    AriaAccordion.keyLeft, AriaAccordion.keyRight,
+    AriaAccordion.keyHome, AriaAccordion.keyEnd
+)
+
+/**
  * Generates a default button.
  *
  * @member {HTMLButtonElement}
  */
 AriaAccordion.defaultButton = function() {
     const button = document.createElement('button')
-    button.classList.add('js-accordion__header')
+    button.classList.add('aria-accordion-header')
     button.setAttribute('type', 'button')
 
     return button
@@ -475,19 +379,18 @@ AriaAccordion.defaultButton = function() {
  * @member {AriaAccordionOptions}
  */
 AriaAccordion.defaultConfig = {
-    headersSelector: '.js-accordion__header',
-    panelsSelector: '.js-accordion__panel',
-    buttonsSelector: 'button.js-accordion__header',
-    buttonsGeneratedContent: 'text',
+    headersSelector: '.aria-accordion-header',
+    panelsSelector: '.aria-accordion-panel',
+    buttonsSelector: 'button.aria-accordion-header',
     button: AriaAccordion.defaultButton(),
-    buttonSuffixId: '_tab',
+    buttonSuffixId: '-tab',
     multiselectable: true,
-    prefixClass: 'accordion',
-    headerSuffixClass: '__title',
-    buttonSuffixClass: '__header',
-    panelSuffixClass: '__panel',
+    prefixClass: 'aria-accordion',
+    headerSuffixClass: '-title',
+    buttonSuffixClass: '-header',
+    panelSuffixClass: '-panel',
     direction: 'ltr',
-    accordionPrefixId: 'accordion'
+    accordionPrefixId: 'aria-accordion'
 }
 
 /**
@@ -497,7 +400,6 @@ AriaAccordion.defaultConfig = {
  *
  * - data-accordion-multiselectable: "true" or "false"
  * - data-accordion-prefix-class: prefix classes
- * - data-accordion-button-generated-content: "text" or "html"
  *
  * @param {string} selector a CSS selector to specify every accordion container.
  * @param {AriaAccordionOptions} options Object containing all the custom
@@ -519,12 +421,6 @@ AriaAccordion.init = function(selector, options) {
         // data-accordion-prefix-class
         if(container.dataset.accordionPrefixClass !== undefined) {
             tagOptions.prefixClass = container.dataset.accordionPrefixClass
-        }
-
-        // data-accordion-button-generated-content
-        if(container.dataset.accordionButtonGeneratedContent !== undefined) {
-            tagOptions.buttonsGeneratedContent =
-                container.dataset.accordionButtonGeneratedContent
         }
 
         // Try to guess the direction used in the container.

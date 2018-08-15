@@ -2,20 +2,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="author" content="Nicolas Hoffmann, Frédéric Bisson" />    
     <title>Accordion example</title>
     <style>
-      .js-accordion {
+      .aria-accordion {
         margin: 1em 2em;
         background-color: #DDDDDD;
       }
 
-      .js-accordion__panel { margin: 1em 1em 1em 2.3em; }
-      .js-accordion__panel[aria-hidden=true] { display: none; }
-      .js-accordion__panel[role="tabpanel"] .js-accordion__header {
-        display: none;
-      }
-
-      button.js-accordion__header {
+      .aria-accordion-header { margin: 0; }
+      .aria-accordion-panel { margin: 1em 1em 1em 2.3em; }
+      .aria-accordion-panel[aria-hidden=true] { display: none; }
+      
+      button.aria-accordion-header {
         display: block !important;
         width: 100%;
         background-color: #005000;
@@ -27,15 +26,13 @@
         border: none;
       }
 
-      button.minimalist-accordion__header { background-color: #700000; }
+      .aria-accordion-header[aria-expanded="true"]:before { content: "⊟ "; }
+      .aria-accordion-header[aria-expanded="false"]:before { content: "⊞ "; }
 
-      .js-accordion__header[aria-expanded="true"]:before { content: "⊟ "; }
-      .js-accordion__header[aria-expanded="false"]:before { content: "⊞ "; }
-
-      .js-accordion__header[aria-selected="true"]:after {
+      .aria-accordion-header[aria-selected="true"]:after {
         content: " → selected";
       }
-      .js-accordion__header[aria-selected="false"]:after {
+      .aria-accordion-header[aria-selected="false"]:after {
         content: " → not selected";
         color: #7F7F7F;
       }
@@ -44,40 +41,43 @@
         margin: 1em auto;
         max-width: 80em;
       }
+
+      .minimalist-accordion .aria-accordion-header button {
+        background-color: #700000;
+      }
     </style>
   </head>
   <body role="document">
     <div id="page">
       <h1>Example of nested accordions</h1>
 
-      <div class="js-accordion" id="accordion1"
-           data-accordion-prefix-classes="minimalist-accordion">
-        <div class="js-accordion__panel">
-            <h2 class="js-accordion__header">First tab</h2>
+      <div class="aria-accordion">
+        <div class="aria-accordion-panel">
+            <h2 class="aria-accordion-header">First tab</h2>
             <p>Content of 1st tab</p>
         </div>
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">Second tab</h2>
+        <div class="aria-accordion-panel">
+          <h2 class="aria-accordion-header">Second tab</h2>
           <p>Content of 2nd tab</p>
 
-          <div class="js-accordion" id="accordion_inner"
+          <div class="aria-accordion"
                data-accordion-prefix-class="minimalist-accordion">
-              <div class="js-accordion__panel">
-                  <h3 class="js-accordion__header">First tab</h3>
+              <div class="aria-accordion-panel">
+                  <h3 class="aria-accordion-header">First tab</h3>
                   <p>Content of 1st tab</p>
               </div>
-              <div class="js-accordion__panel">
-                  <h2 class="js-accordion__header">Second tab</h2>
+              <div class="aria-accordion-panel">
+                  <h3 class="aria-accordion-header">Second tab</h3>
                   <p>Content of 2nd tab</p>
               </div>
-              <div class="js-accordion__panel">
-                  <h2 class="js-accordion__header">Third tab</h2>
+              <div class="aria-accordion-panel">
+                  <h3 class="aria-accordion-header">Third tab</h3>
                   <p>Content of 3rd tab</p>
               </div>
           </div>
         </div>
-        <div class="js-accordion__panel">
-            <h2 class="js-accordion__header">Third tab</h2>
+        <div class="aria-accordion-panel">
+            <h2 class="aria-accordion-header">Third tab</h2>
             <p>Content of 3rd tab</p>
         </div>
       </div>
@@ -91,10 +91,10 @@
 
     <script src="aria-accordion.js"></script>
     <script>
-      AriaAccordion.init('.js-accordion', {
-        headersSelector: ':scope > .js-accordion__header',
-        panelsSelector: ':scope > .js-accordion__panel',
-        buttonsSelector: ':scope > button.js-accordion__header'
+      AriaAccordion.init('.aria-accordion', {
+        headersSelector: ':scope > .aria-accordion-header',
+        panelsSelector: ':scope > .aria-accordion-panel',
+        buttonsSelector: ':scope > * > button.aria-accordion-header'
       })
     </script>
   </body>

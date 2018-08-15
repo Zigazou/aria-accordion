@@ -5,18 +5,16 @@
     <meta name="author" content="Nicolas Hoffmann, Frédéric Bisson" />    
     <title>Accordion example</title>
     <style>
-      .js-accordion {
+      .aria-accordion {
         margin: 1em 2em;
         background-color: #DDDDDD;
       }
 
-      .js-accordion__panel { margin: 1em 1em 1em 2.3em; }
-      .js-accordion__panel[aria-hidden=true] { display: none; }
-      .js-accordion__panel[role="tabpanel"] .js-accordion__header {
-        display: none;
-      }
-
-      button.js-accordion__header {
+      .aria-accordion-header { margin: 0; }
+      .aria-accordion-panel { margin: 1em 1em 1em 2.3em; }
+      .aria-accordion-panel[aria-hidden=true] { display: none; }
+      
+      button.aria-accordion-header {
         display: block !important;
         width: 100%;
         background-color: #005000;
@@ -28,13 +26,13 @@
         border: none;
       }
 
-      .js-accordion__header[aria-expanded="true"]:before { content: "⊟ "; }
-      .js-accordion__header[aria-expanded="false"]:before { content: "⊞ "; }
+      .aria-accordion-header[aria-expanded="true"]:before { content: "⊟ "; }
+      .aria-accordion-header[aria-expanded="false"]:before { content: "⊞ "; }
 
-      .js-accordion__header[aria-selected="true"]:after {
+      .aria-accordion-header[aria-selected="true"]:after {
         content: " → selected";
       }
-      .js-accordion__header[aria-selected="false"]:after {
+      .aria-accordion-header[aria-selected="false"]:after {
         content: " → not selected";
         color: #7F7F7F;
       }
@@ -52,26 +50,26 @@
 
       <h2>Accordion with default options</h2>
 
-      <div id="accordion_0" class="js-accordion">
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">First tab</h2>
+      <div class="aria-accordion">
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">First tab</h3>
           here the content of 1st tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
         </div>
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">Second tab</h2>
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">Second tab</h3>
           here the content of 2nd tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
         </div>
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">Third tab</h2>
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">Third tab</h3>
           here the content of 3rd tab<br><br>
           plop
         </div>
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">Fourth tab</h2>
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">Fourth tab</h3>
           here the content of 4th tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
@@ -80,26 +78,26 @@
 
       <h2>Accordion with one open panel right from the start</h2>
 
-      <div id="accordion_1" class="js-accordion">
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">First tab</h2>
+      <div class="aria-accordion">
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">First tab</h3>
           here the content of 1st tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
         </div>
-        <div class="js-accordion__panel" data-accordion-open="true">
-          <h2 class="js-accordion__header">Second tab</h2>
+        <div class="aria-accordion-panel" data-accordion-open="true">
+          <h3 class="aria-accordion-header">Second tab</h3>
           here the content of 2nd tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
         </div>
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">Third tab</h2>
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">Third tab</h3>
           here the content of 3rd tab<br><br>
           plop
         </div>
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">Fourth tab</h2>
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">Fourth tab</h3>
           here the content of 4th tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
@@ -108,27 +106,26 @@
 
       <h2>Accordion with multiselectable option disabled</h2>
 
-      <div id="accordion_2" class="js-accordion"
-          data-accordion-multiselectable="false">
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">First tab</h2>
+      <div class="aria-accordion" data-accordion-multiselectable="false">
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">First tab</h3>
           here the content of 1st tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
         </div>
-        <div class="js-accordion__panel" data-accordion-open="true">
-          <h2 class="js-accordion__header">Second tab</h2>
+        <div class="aria-accordion-panel" data-accordion-open="true">
+          <h3 class="aria-accordion-header">Second tab</h3>
           here the content of 2nd tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
         </div>
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">Third tab</h2>
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">Third tab</h3>
           here the content of 3rd tab<br><br>
           plop
         </div>
-        <div class="js-accordion__panel">
-          <h2 class="js-accordion__header">Fourth tab</h2>
+        <div class="aria-accordion-panel">
+          <h3 class="aria-accordion-header">Fourth tab</h3>
           here the content of 4th tab<br><br>
           <a href="#">pweet</a><br><br>
           plop
@@ -143,6 +140,6 @@
     </div>
 
     <script src="aria-accordion.js"></script>
-    <script>AriaAccordion.init('.js-accordion')</script>
+    <script>AriaAccordion.init('.aria-accordion')</script>
   </body>
 </html>
